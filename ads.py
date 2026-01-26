@@ -9,6 +9,19 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 api_ads_bp = Blueprint('api_ads', __name__)
 
+def delete_file_from_disk(filename):
+    """Удаляет файл из папки uploads, если он существует"""
+    if not filename:
+        return
+        
+    try:
+        file_path = os.path.join(current_app.root_path, 'static', 'uploads', filename)
+        
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"Файл удален: {filename}")
+    except Exception as e:
+        print(f"Ошибка при удалении файла {filename}: {e}")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -19,7 +32,7 @@ def serialize_ad(ad, full=False):
         'title': ad.title,
         'price': ad.price,
         'price_unit': ad.price_unit,
-        'city': ad.city,
+        'district': ad.district,
         'created_date': ad.created_date.isoformat() if ad.created_date else None,
         'main_photo': ad.photos[0].image_filename if ad.photos else None
     }
@@ -63,7 +76,7 @@ def create_ad():
 
     data = request.get_json()
     
-    required_fields = ['title', 'description', 'city']
+    required_fields = ['title', 'description', 'district']
     for field in required_fields:
         if not data.get(field):
             return jsonify({'error': f'Поле {field} обязательно для заполнения'}), 400
@@ -71,16 +84,24 @@ def create_ad():
     user_id = getattr(g, 'current_user_id', None)
     if not user_id:
          return jsonify({'error': 'Необходима авторизация'}), 401
-
+    
+    price = data.get('price')
+    if price is not None:
+        try:
+            if float(price) < 0:
+                return jsonify({'error': 'Цена не может быть отрицательной'}), 400
+        except ValueError:
+            return jsonify({'error': 'Цена должна быть числом'}), 400
+        
     try:
         new_ad = Ad(
             title=data['title'].strip(),
             description=data['description'].strip(), 
-            price=data.get('price'),
+            price=price,
             price_unit=data.get('price_unit', 'rub'),
             ad_type=data.get('ad_type', 'item'),
             condition=data.get('condition'),
-            city=data['city'].strip(),
+            district=data['district'].strip(),
             address=data.get('address'),
             category=data.get('category'),
             user_id=user_id,
@@ -108,31 +129,40 @@ def edit_ad(id):
     user_id = getattr(g, 'current_user_id', None)
     if not user_id:
          return jsonify({'error': 'Необходима авторизация'}), 401
-
+    
+    user_id = int(user_id) 
     ad = Ad.query.get(id)
-    if not ad:
-        return jsonify({'error': 'Объявление не найдено'}), 404
+    if not ad: return jsonify({'error': 'Объявление не найдено'}), 404
 
-    if ad.user_id != user_id:
-        return jsonify({'error': 'Нет прав на редактирование'}), 403
+    if ad.user_id != user_id: return jsonify({'error': 'Нет прав на редактирование'}), 403
 
-    if not request.is_json:
-        return jsonify({'error': 'Content-Type должен быть application/json'}), 400
+    if not request.is_json: return jsonify({'error': 'Content-Type должен быть application/json'}), 400
 
     data = request.get_json()
 
     try:
         if 'title' in data: ad.title = data['title'].strip()
         if 'description' in data: ad.description = data['description'].strip()
-        if 'price' in data: ad.price = data['price']
+        if 'price' in data: 
+            price = data['price']
+            if price is not None:
+                try:
+                    if float(price) < 0:
+                        return jsonify({'error': 'Цена не может быть отрицательной'}), 400
+                except ValueError:
+                    return jsonify({'error': 'Цена должна быть числом'}), 400
+            ad.price = price
         if 'price_unit' in data: ad.price_unit = data['price_unit']
         if 'condition' in data: ad.condition = data['condition']
-        if 'city' in data: ad.city = data['city']
+        if 'district' in data: ad.district = data['district']
         if 'address' in data: ad.address = data['address']
         if 'category' in data: ad.category = data['category']
         if 'status' in data: ad.status = data['status']
 
         if 'photos' in data and isinstance(data['photos'], list):
+            old_photos = AdPhoto.query.filter_by(ad_id=ad.id).all()
+            for photo in old_photos:
+                delete_file_from_disk(photo.image_filename)
             AdPhoto.query.filter_by(ad_id=ad.id).delete()
             for filename in data['photos']:
                 photo = AdPhoto(image_filename=filename, ad_id=ad.id)
@@ -150,7 +180,8 @@ def delete_ad(id):
     user_id = getattr(g, 'current_user_id', None)
     if not user_id:
          return jsonify({'error': 'Необходима авторизация'}), 401
-
+    
+    user_id = int(user_id)
     ad = Ad.query.get(id)
     if not ad:
         return jsonify({'error': 'Объявление не найдено'}), 404
@@ -159,6 +190,8 @@ def delete_ad(id):
         return jsonify({'error': 'Нет прав на удаление'}), 403
 
     try:
+        for photo in ad.photos:
+            delete_file_from_disk(photo.image_filename)
         db.session.delete(ad)
         db.session.commit()
         return '', 204

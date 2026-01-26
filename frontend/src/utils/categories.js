@@ -17,3 +17,12 @@ export const SERVICE_CATEGORIES = {
     education: 'Обучение',
     beauty: "Красота и здоровье" 
 }
+
+export const DISTRICTS = { 
+    leninsky: 'Ленинский', 
+    pervomaisky: 'Первомайский',
+    pervorechensky: 'Первореченский',
+    soviet: "Советский",
+    frunzensky: "Фрунзенский"
+
+}

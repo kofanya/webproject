@@ -14,7 +14,6 @@ def register():
  
     name = data.get('name', '').strip()
     last_name = data.get('last_name', '').strip()
-    city = data.get('city', '').strip()
     email = data.get('email', '').strip()
     password = data.get('password', '').strip()
 
@@ -29,7 +28,6 @@ def register():
         last_name=last_name,
         email=email, 
         hashed_password=hashed,
-        city=city
     )
     try:
         db.session.add(new_user)
@@ -63,7 +61,6 @@ def login():
             'name': user.name,
             'last_name': user.last_name,
             'email': user.email,
-            'city': user.city
         }
     })
 
@@ -119,6 +116,5 @@ def get_current_user():
             "id": user.id,
             "name": user.name,
             "email": user.email,
-            "city": user.city
         }
     }), 200

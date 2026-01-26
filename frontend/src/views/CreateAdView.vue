@@ -43,8 +43,13 @@
         </option>
       </select>
 
-      <label>Город</label>
-      <input  v-model="form.city" class="form-control" required></input>
+      <label>Район</label>
+      <select v-model="form.district" class="form-control" required>
+        <option disabled value="">Выберите район</option>
+        <option v-for="dist in DISTRICTS" :key="dist" :value="dist">
+          {{ dist }}
+        </option>
+      </select>
 
       <label>Адрес</label>
       <input  v-model="form.address" type="text" class="form-control" required>
@@ -190,7 +195,7 @@ form {
 </style>
 
 <script setup>
-import { ITEM_CATEGORIES, SERVICE_CATEGORIES } from '@/utils/categories'
+import { ITEM_CATEGORIES, SERVICE_CATEGORIES, DISTRICTS } from '@/utils/categories'
 import { ref, onMounted, watch, computed} from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -205,7 +210,7 @@ const form = ref({
   title: '',
   description: '',
   price: null,
-  city: '',
+  district: '',
   address: '',
   category: '',
   ad_type: 'item'

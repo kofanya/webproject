@@ -54,3 +54,16 @@ body {
     min-height: 120px;
     resize: vertical;
   }
+
+.button { 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 14px 24px; 
+    border-radius: 8px; 
+    border: none; 
+    font-size: 16px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    text-decoration: none; 
+    width: 100%; }

@@ -9,9 +9,6 @@
       <label>Фамилия</label>
       <input type="text" v-model="registerForm.last_name" class="form-control" required>
 
-      <label>Город</label>
-      <input type="text" v-model="registerForm.city" class="form-control" required>
-
       <label>Почта</label>
       <input type="email" v-model="registerForm.email" class="form-control" required>
 
@@ -90,7 +87,6 @@ const loading = ref(false)
 const registerForm = ref({
   name: '',
   last_name: '',
-  city: '',
   email: '',
   password: ''
 })
