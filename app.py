@@ -6,6 +6,7 @@ from models import db, TokenBlocklist, Ad, AdPhoto, User
 
 from auth import auth_bp
 from ads import api_ads_bp
+from messages import api_messages_bp
 
 app = Flask(__name__)
 
@@ -33,7 +34,7 @@ def check_token(jwt_header, jwt_payload):
 def load_user_from_jwt():
     try:
         verify_jwt_in_request(optional=True)
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())
         if user_id:
             g.current_user_id = user_id
         else:
@@ -42,7 +43,8 @@ def load_user_from_jwt():
         g.current_user_id = None
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(api_ads_bp, url_prefix='/api') 
+app.register_blueprint(api_ads_bp, url_prefix='/api')
+app.register_blueprint(api_messages_bp, url_prefix='/api') 
 
 if __name__ == '__main__':
     with app.app_context():

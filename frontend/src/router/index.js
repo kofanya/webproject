@@ -6,6 +6,7 @@ import CreateAdView from '../views/CreateAdView.vue'
 import AdsView from '../views/AdsView.vue'
 import AdView from '../views/AdPageView.vue'
 import EditAdView from '../views/EditAdView.vue'
+import ChatView from '../views/ChatView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,6 +22,8 @@ const router = createRouter({
     { path: '/ads/:id', component: AdView },
     { path: '/ads/edit/:id', name: 'edit-ad', component: EditAdView },
     { path: '/createad', component: CreateAdView },
+    { path: '/chats', name: 'chats', component: ChatView },
+    { path: '/chats/:adId/:partnerId', name: 'active-chat', component: ChatView },
   ],
 })
 

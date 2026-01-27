@@ -23,6 +23,9 @@
                 <RouterLink to="/createad" class="nav-link">Разместить объявление</RouterLink>
             </li>
             <template v-if="authStore.isAuthenticated">
+              <li @click="closeMenu">
+                <RouterLink to="/chats" class="nav-link">Сообщения</RouterLink>
+              </li>
               <li class="user-greeting">
                 Привет, {{ authStore.user?.name }}!
               </li>

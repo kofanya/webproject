@@ -66,11 +66,11 @@
           </div>
           <div v-else>
             <div v-if="authStore.isAuthenticated">
-              <button class="button contact-button">Написать автору</button>
+              <button @click="contactAuthor" class="button contact-button">Написать автору</button>
             </div>
             <div v-else>
               <RouterLink to="/login" class="button contact-button">
-                Войдите, чтобы написать
+                Написать автору
               </RouterLink>
             </div>
           </div>
@@ -192,6 +192,19 @@ const formatPrice = (price) => {
 }
 
 onMounted(() => { fetchAd() })
+const contactAuthor = () => {
+  if (!authStore.user) {
+    router.push('/login')
+    return
+  }
+  router.push({
+    name: 'active-chat',
+    params: { 
+      adId: ad.value.id, 
+      partnerId: ad.value.user_id 
+    }
+  })
+}
 </script>
 
 <style scoped>
