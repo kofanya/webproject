@@ -57,15 +57,15 @@
 
         <div class="actions-panel">
           <div v-if="isOwner" class="owner-controls">
-            <button @click="editAd" type="button" class="button edit-button">
+            <button @click="editAd" type="button" class="button">
                 Редактировать
             </button>
-            <button @click="deleteAd" type="button" class="button delete-button">
+            <button @click="deleteAd" type="button" class="button">
                 Удалить
             </button>
           </div>
           <div v-else>
-              <button @click="contactAuthor" class="button contact-button">Написать автору</button>
+              <button @click="contactAuthor" class="button">Написать автору</button>
           </div>
         </div>
       </div>
@@ -75,6 +75,24 @@
       <div class="vacancy-text">
         {{ ad.description }}
       </div>
+    </div>
+    <div class="seller-info-box"> 
+        <RouterLink :to="`/users/${ad.user_id}`" class="seller-link">
+          Перейти в профиль продавца
+        </RouterLink>
+    </div>
+
+    <div v-if="authStore.isAuthenticated && !isOwner" class="review-form-section">
+      <h3>Оставить отзыв</h3>
+      
+      <div class="star-input">
+        <span v-for="i in 5" :key="i" @click="newReview.rating = i" 
+              class="star-btn" :class="{ active: i <= newReview.rating }">★</span>
+      </div>
+
+      <textarea v-model="newReview.text" class="form-control"></textarea>
+      
+      <button @click="sendReview" class="button contact-button">Отправить отзыв</button>
     </div>
 
     <div class="back">
@@ -102,6 +120,7 @@ const authStore = useAuthStore()
 const ad = ref(null)
 const currentPhotoIndex = ref(0)
 const isLoading = ref(true)
+const newReview = ref({ rating: 0, text: '' }) 
 
 const fetchAd = async () => {
   try {
@@ -183,7 +202,6 @@ const formatPrice = (price) => {
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
 }
 
-onMounted(() => { fetchAd() })
 const contactAuthor = () => {
   if (!authStore.user) {
     router.push('/login')
@@ -197,15 +215,49 @@ const contactAuthor = () => {
     }
   })
 }
+
+const sendReview = async () => {
+  if (newReview.value.rating === 0) {
+    alert('Поставьте оценку')
+    return
+  }
+
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify({
+        ad_id: ad.value.id,
+        rating: newReview.value.rating,
+        text: newReview.value.text
+      })
+    })
+
+    const data = await res.json()
+    
+    if (res.ok) {
+      alert('Спасибо за отзыв!')
+      newReview.value = { rating: 0, text: '' }
+    } else {
+      alert(data.error)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+onMounted(() => { 
+  fetchAd() 
+})
 </script>
 
 <style scoped>
-.container-2 {
-  max-width: 1100px;
-  margin: 40px auto;
-  padding: 0 20px;
-  font-family: 'Segoe UI', sans-serif;
-}
+
+.star-btn { cursor: pointer; font-size: 1.5rem; color: #ccc; }
+.star-btn.active { color: #fbbf24; }
+.seller-link { color: #3b82f6; text-decoration: underline; font-weight: bold; }
 
 .ad-top-section {
   display: grid;
@@ -242,9 +294,9 @@ const contactAuthor = () => {
 }
 
 .thumbnails-row {
-  display: flex;
+  display: flex; 
   gap: 10px;
-  overflow-x: auto;
+  overflow-x: auto; 
   padding-bottom: 5px;
 }
 
@@ -336,19 +388,14 @@ const contactAuthor = () => {
 .next { right: 10px; }
 
 .actions-panel { margin-top: auto; }
-.contact-button { 
+.button { 
     background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%); 
-    color: white; }
+    color: white; 
+  }
 .owner-controls { 
     display: flex; 
     gap: 15px; 
     flex-direction: column; }
-.edit-button { 
-    background-color: #eaab46; 
-    color: white; }
-.delete-button { 
-    background-color: #f55b4a; 
-    color: white; }
 .back { 
     margin-top: 50px; 
     text-align: center; }

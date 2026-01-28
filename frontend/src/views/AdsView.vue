@@ -132,12 +132,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-    .container-2 {
-    max-width: 1250px; 
-    margin: 0 auto;
-    padding: 0 20px;
-    }
-
     .title {
     text-align: center;
     margin: 40px 0 30px;

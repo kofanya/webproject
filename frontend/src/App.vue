@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
+import Star from '@/components/Star.vue'
 
 const authStore = useAuthStore()
 const isReady = ref(false)

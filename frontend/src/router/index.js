@@ -9,6 +9,7 @@ import EditAdView from '../views/EditAdView.vue'
 import ChatView from '../views/ChatView.vue'
 import ServicesView from '../views/ServicesView.vue'
 import FavoritesView from '../views/FavoritesView.vue'
+import UserView from '../views/UserView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,6 +29,7 @@ const router = createRouter({
     { path: '/chats/:adId/:partnerId', name: 'active-chat', component: ChatView },
     { path: '/services', component: ServicesView },
     { path: '/favorites', component: FavoritesView },
+    { path: '/users/:id', component: UserView },
   ],
 })
 

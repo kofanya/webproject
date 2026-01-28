@@ -10,12 +10,11 @@ import { RouterLink } from 'vue-router'
         <RouterLink to="/" class="brand-link">
           <h3 class="logo-text">Барахолка</h3>
         </RouterLink>
-        <span class="copyright">© 2026 Company, Inc</span>
       </div>
 
       <ul class="footer-social">
         <li>
-          <a href="https://github.com/kofanya/MeetWork" target="_blank" class="social-link" aria-label="GitHub">
+          <a href="https://github.com/kofanya/webproject" target="_blank" class="social-link" aria-label="GitHub">
             GitHub
           </a>
         </li>
@@ -105,10 +104,6 @@ import { RouterLink } from 'vue-router'
   .footer-brand {
     flex-direction: column;
     gap: 12px;
-  }
-  .copyright {
-    border-left: none;
-    padding-left: 0;
   }
 }
 </style>

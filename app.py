@@ -7,6 +7,7 @@ from models import db, TokenBlocklist, Ad, AdPhoto, User
 from auth import auth_bp
 from ads import api_ads_bp
 from messages import api_messages_bp
+from reviews import api_reviews_bp
 
 app = Flask(__name__)
 
@@ -45,9 +46,9 @@ def load_user_from_jwt():
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(api_ads_bp, url_prefix='/api')
 app.register_blueprint(api_messages_bp, url_prefix='/api') 
+app.register_blueprint(api_reviews_bp, url_prefix='/api')
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("База данных инициализирована.")
     app.run(debug=True)
