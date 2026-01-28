@@ -51,7 +51,19 @@
             :class="{ 'mine': msg.is_mine, 'theirs': !msg.is_mine }"
           >
             <div class="message-text">{{ msg.body }}</div>
-            <div class="message-time">{{ formatTime(msg.created_date) }}</div>
+            
+            <div class="message-footer">
+                <span 
+                  v-if="msg.is_mine" 
+                  class="delete-btn" 
+                  @click.stop="deleteMessage(msg.id)"
+                >
+                  Удалить
+                </span>
+                
+                <span class="message-time">{{ formatTime(msg.created_date) }}</span>
+            </div>
+
           </div>
         </div>
 
@@ -60,7 +72,7 @@
             v-model="newMessage" 
             @keyup.enter="sendMessage"
             type="text" 
-            placeholder="Напишите сообщение..." 
+            placeholder="Сообщение" 
             class="input-field"
           >
           <button @click="sendMessage" class="send-btn" :disabled="!newMessage.trim()">
@@ -103,6 +115,26 @@ let pollingInterval = null
 
 const goToAd = () => {
   router.push(`/ads/${activeAdId.value}`)
+}
+
+const deleteMessage = async (messageId) => {
+    if(!confirm('Вы уверены, что хотите удалить это сообщение?')) return;
+
+    try {
+        const res = await fetch(`/api/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${authStore.token}` }
+        })
+
+        if (res.ok) {
+            messages.value = messages.value.filter(m => m.id !== messageId)
+            fetchChats()
+        } else {
+            alert('Не удалось удалить сообщение')
+        }
+    } catch (e) {
+        console.error(e)
+    }
 }
 
 const fetchChats = async () => {
@@ -352,8 +384,6 @@ watch(() => route.params, (newParams) => {
   background: #fff;
 }
 
-.messages-header h3 { margin: 0; font-size: 1.1rem; }
-
 .back-btn { 
   background: none; 
   border: 1px solid #ddd;
@@ -398,11 +428,29 @@ watch(() => route.params, (newParams) => {
   border-bottom-left-radius: 2px;
 }
 
+.message-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
 .message-time {
   font-size: 0.7rem;
-  margin-top: 5px;
-  text-align: right;
   opacity: 0.7;
+}
+
+.delete-btn {
+  font-size: 0.7rem;
+  opacity: 0.7;   
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  text-decoration: underline; 
 }
 
 .message-input-area {

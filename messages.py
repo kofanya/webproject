@@ -117,3 +117,24 @@ def get_conversation(ad_id, partner_id):
         })
 
     return jsonify(result)
+
+@api_messages_bp.route('/messages/<int:message_id>', methods=['DELETE'])
+def delete_message(message_id):
+    user_id = getattr(g, 'current_user_id', None)
+    if not user_id:
+        return jsonify({'error': 'Необходима авторизация'}), 401
+
+    msg = Message.query.get(message_id)
+    if not msg:
+        return jsonify({'error': 'Сообщение не найдено'}), 404
+
+    if msg.sender_id != user_id:
+        return jsonify({'error': 'Вы не можете удалить чужое сообщение'}), 403
+
+    try:
+        db.session.delete(msg)
+        db.session.commit()
+        return jsonify({'message': 'Сообщение удалено'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Ошибка удаления', 'details': str(e)}), 500
