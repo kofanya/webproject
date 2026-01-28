@@ -30,13 +30,10 @@
         @click="goToAd(ad.id)"
       >
         <div class="card-image-wrapper">
-          <img 
-            :src="getPhotoUrl(ad.main_photo)" 
-            alt="Фото товара" 
-            class="card-image"
-          >
+          <img :src="getPhotoUrl(ad.main_photo)" alt="Фото товара"  class="card-image">
           <button class="favorite-btn" @click.stop="toggleFavorite(ad)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="heart-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+            stroke-linecap="round" stroke-linejoin="round" class="heart-icon":class="{ 'liked': ad.is_favorite }">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
           </button>
@@ -63,6 +60,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { SERVICE_CATEGORIES, DISTRICTS } from '@/utils/categories'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const ads = ref([])
@@ -70,6 +68,7 @@ const loading = ref(true)
 const BACKEND_URL = 'http://127.0.0.1:5000'
 const selectedCategory = ref('all')
 const selectedDistrict = ref('all')
+const authStore = useAuthStore()
 
 const fetchAds = async () => {
   loading.value = true
@@ -110,10 +109,28 @@ const goToAd = (id) => {
   router.push(`/ads/${id}`)
 }
 
-const toggleFavorite = (ad) => {
-  console.log('Добавить в избранное:', ad.id)
-  // Здесь будет логика отправки запроса на сервер
+const toggleFavorite = async (ad) => {
+  if (!authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
+  try {
+    const response = await fetch(`/api/ads/${ad.id}/favorite`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      ad.is_favorite = data.is_favorite
+    }
+  } catch (e) {
+    console.error(e)
+  }
 }
+
 
 onMounted(() => {
   fetchAds()
@@ -208,6 +225,11 @@ onMounted(() => {
     height: 20px;
     color: #666; 
     transition: fill 0.2s, color 0.2s;
+    }
+    .heart-icon.liked {
+      fill: #ff4757;
+      color: #ff4757; 
+      transform: scale(1.1);
     }
 
     .favorite-btn:active .heart-icon {
