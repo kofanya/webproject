@@ -65,19 +65,11 @@
             </button>
           </div>
           <div v-else>
-            <div v-if="authStore.isAuthenticated">
               <button @click="contactAuthor" class="button contact-button">Написать автору</button>
-            </div>
-            <div v-else>
-              <RouterLink to="/login" class="button contact-button">
-                Написать автору
-              </RouterLink>
-            </div>
           </div>
         </div>
       </div>
     </div>
-
     <div class="description-section">
       <div class="section-title">Описание</div>
       <div class="vacancy-text">

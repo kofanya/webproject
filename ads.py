@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, g, current_app
-from models import Ad, AdPhoto, db
+from models import Ad, AdPhoto, db, User 
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import uuid
@@ -10,21 +10,18 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 api_ads_bp = Blueprint('api_ads', __name__)
 
 def delete_file_from_disk(filename):
-    if not filename:
-        return   
+    if not filename: return
     try:
         file_path = os.path.join(current_app.root_path, 'static', 'uploads', filename)
-        
         if os.path.exists(file_path):
             os.remove(file_path)
-            print(f"Файл удален: {filename}")
     except Exception as e:
-        print(f"Ошибка при удалении файла {filename}: {e}")
+        print(f"Ошибка удаления: {e}")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def serialize_ad(ad, full=False):
+def serialize_ad(ad, full=False, current_user=None):
     data = {
         'id': ad.id,
         'title': ad.title,
@@ -32,8 +29,12 @@ def serialize_ad(ad, full=False):
         'price_unit': ad.price_unit,
         'district': ad.district,
         'created_date': ad.created_date.isoformat() if ad.created_date else None,
-        'main_photo': ad.photos[0].image_filename if ad.photos else None
+        'main_photo': ad.photos[0].image_filename if ad.photos else None,
+        'is_favorite': False
     }
+
+    if current_user:
+        data['is_favorite'] = current_user.has_liked(ad)
 
     if full:
         data.update({
@@ -55,30 +56,37 @@ def get_ads():
     ad_type = request.args.get('ad_type')
     category = request.args.get('category')
     district = request.args.get('district')
+    current_user = None
+    user_id = getattr(g, 'current_user_id', None)
+    if user_id:
+        current_user = User.query.get(int(user_id))
 
     query = Ad.query.filter_by(status='active')
     if ad_type:
         query = query.filter_by(ad_type=ad_type)
-
     if category and category != 'all':
         query = query.filter_by(category=category)
-
     if district and district != 'all':
         query = query.filter_by(district=district)
     
     ads = query.order_by(Ad.created_date.desc()).all()
-    ads_list = [serialize_ad(ad, full=False) for ad in ads]
+    ads_list = [serialize_ad(ad, full=False, current_user=current_user) for ad in ads]
     return jsonify(ads_list)
 
 @api_ads_bp.route('/ads/<int:id>', methods=['GET'])
 def get_ad(id):
+    current_user = None
+    user_id = getattr(g, 'current_user_id', None)
+    if user_id:
+        current_user = User.query.get(int(user_id))
+
     ad = Ad.query.get(id)
     if ad is None:
         return jsonify({'error': 'Объявление не найдено'}), 404
     ad.views += 1
     db.session.commit()
 
-    return jsonify(serialize_ad(ad, full=True))
+    return jsonify(serialize_ad(ad, full=True, current_user=current_user))
 
 @api_ads_bp.route('/ads', methods=['POST'])
 def create_ad():
@@ -233,3 +241,38 @@ def upload_image():
     
     return jsonify({'error': 'Недопустимый формат файла'}), 400
 
+@api_ads_bp.route('/ads/<int:id>/favorite', methods=['POST'])
+def toggle_favorite(id):
+    user_id = getattr(g, 'current_user_id', None)
+    if not user_id:
+        return jsonify({'error': 'Нужна авторизация'}), 401
+
+    user = User.query.get(int(user_id))
+    ad = Ad.query.get(id)
+
+    if not ad:
+        return jsonify({'error': 'Объявление не найдено'}), 404
+
+    is_favorite = False
+    
+    if user.has_liked(ad):
+        user.unlike(ad) 
+        is_favorite = False
+    else:
+        user.like(ad)  
+        is_favorite = True
+
+    db.session.commit()
+    return jsonify({'is_favorite': is_favorite})
+
+@api_ads_bp.route('/favorites', methods=['GET'])
+def get_favorites():
+    user_id = getattr(g, 'current_user_id', None)
+    if not user_id:
+        return jsonify({'error': 'Нужна авторизация'}), 401
+
+    user = User.query.get(int(user_id))
+    favorite_ads = user.saved_ads.all()
+ 
+    ads_list = [serialize_ad(ad, full=False, current_user=user) for ad in favorite_ads]
+    return jsonify(ads_list)

@@ -17,12 +17,12 @@
                 <RouterLink to="/services" class="nav-link">Услуги</RouterLink>
             </li>
             <li @click="closeMenu">
-                <RouterLink to="/ads" class="nav-link">Избранное</RouterLink>
-            </li>
-            <li @click="closeMenu">
-                <RouterLink to="/createad" class="nav-link">Разместить объявление</RouterLink>
+                <RouterLink to="/favorites" class="nav-link">Избранное</RouterLink>
             </li>
             <template v-if="authStore.isAuthenticated">
+              <li @click="closeMenu">
+                <RouterLink to="/createad" class="nav-link">Разместить объявление</RouterLink>
+              </li>
               <li @click="closeMenu">
                 <RouterLink to="/chats" class="nav-link">Сообщения</RouterLink>
               </li>

@@ -85,7 +85,7 @@ class Ad(db.Model):
 class AdPhoto(db.Model):
     __tablename__ = 'ad_photo'
     id = db.Column(db.Integer, primary_key=True)
-    image_filename = db.Column(db.String(255), nullable=False) # Имя файла или URL
+    image_filename = db.Column(db.String(255), nullable=False) 
     ad_id = db.Column(db.Integer, db.ForeignKey('ad.id'), nullable=False)
 
     def __repr__(self):
