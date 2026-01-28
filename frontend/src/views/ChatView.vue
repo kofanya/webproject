@@ -18,10 +18,6 @@
           :class="{ active: isChatActive(chat) }"
           @click="selectChat(chat)"
         >
-          <div class="chat-avatar">
-            <img v-if="chat.ad_photo" :src="`${BACKEND_URL}/static/uploads/${chat.ad_photo}`" alt="ad">
-            <div v-else class="avatar-placeholder">{{ chat.partner_name[0] }}</div>
-          </div>
           <div class="chat-details">
             <div class="chat-header">
               <span class="partner-name">{{ chat.partner_name }}</span>
@@ -38,9 +34,10 @@
       
       <div v-if="activePartnerId" class="messages-wrapper">
         <div class="messages-header">
-          <button class="back-btn" @click="closeChat">←</button>
+          <button class="back-btn" @click="$router.back()">❮ Назад</button>
+          
           <div class="header-info">
-             <h3>Чат по объявлению #{{ activeAdId }}</h3>
+             <h3 @click="goToAd" class="clickable-title">Чат по объявлению №{{ activeAdId }}</h3>
           </div>
         </div>
 
@@ -63,17 +60,17 @@
             v-model="newMessage" 
             @keyup.enter="sendMessage"
             type="text" 
-            placeholder="Сообщение" 
+            placeholder="Напишите сообщение..." 
             class="input-field"
           >
           <button @click="sendMessage" class="send-btn" :disabled="!newMessage.trim()">
-            ➤
+            Отправить
           </button>
         </div>
       </div>
 
       <div v-else class="no-chat-selected">
-        <p>Выберите чат слева или начните новый со страницы объявления</p>
+        <p>Выберите чат из списка</p>
       </div>
 
     </div>
@@ -103,6 +100,10 @@ const activePartnerId = computed(() => route.params.partnerId)
 const isMobileChatActive = computed(() => !!activeAdId.value)
 
 let pollingInterval = null
+
+const goToAd = () => {
+  router.push(`/ads/${activeAdId.value}`)
+}
 
 const fetchChats = async () => {
   try {
@@ -182,10 +183,6 @@ const selectChat = (chat) => {
   })
 }
 
-const closeChat = () => {
-  router.push('/chats')
-}
-
 const isChatActive = (chat) => {
   return String(chat.ad_id) === String(activeAdId.value) && 
          String(chat.partner_id) === String(activePartnerId.value)
@@ -206,9 +203,7 @@ const formatTime = (isoString) => {
 
   const date = new Date(isoString)
   const now = new Date()
-  const isToday = date.getDate() === now.getDate() &&
-                  date.getMonth() === now.getMonth() &&
-                  date.getFullYear() === now.getFullYear()
+  const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
   if (isToday) {
     return date.toLocaleTimeString('ru-RU', { 
       hour: '2-digit', 
@@ -219,9 +214,6 @@ const formatTime = (isoString) => {
     return date.toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
-    }) + ' ' + date.toLocaleTimeString('ru-RU', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
     })
   }
 }
@@ -260,14 +252,12 @@ watch(() => route.params, (newParams) => {
 .chat-container {
   display: flex;
   height: calc(100vh - 80px); 
-  max-width: 1200px;
+  max-width: 1250px;
   margin: 20px auto;
-  background: white;
   border-radius: 12px;
   box-shadow: 0 5px 20px rgba(0,0,0,0.1);
   overflow: hidden;
 }
-
 .chat-sidebar {
   width: 350px;
   border-right: 1px solid #eee;
@@ -289,35 +279,56 @@ watch(() => route.params, (newParams) => {
 }
 
 .chat-item {
-  display: flex;
-  padding: 15px;
+  display: flex; 
+  padding: 15px 20px;
   cursor: pointer;
   border-bottom: 1px solid #f0f0f0;
   transition: background 0.2s;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .chat-item:hover { background: #f0f0f0; }
-.chat-item.active { background: #e6f0ff; border-left: 4px solid #3b82f6; }
+.chat-item.active { background: #deebff; border-left: 4px solid #3b82f6; }
 
-.chat-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 15px;
-  background: #ddd;
-  flex-shrink: 0;
+.chat-details { 
+  width: 100%; 
 }
 
-.chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.avatar-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; font-weight: bold; color: #666; font-size: 1.2rem; }
+.chat-header { 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 4px; 
+}
 
-.chat-details { flex: 1; overflow: hidden; }
-.chat-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
-.partner-name { font-weight: 600; font-size: 0.95rem; }
-.chat-date { font-size: 0.8rem; color: #888; }
-.ad-name { font-size: 0.85rem; color: #3b82f6; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.last-message { font-size: 0.9rem; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.partner-name { 
+  font-weight: 700; 
+  font-size: 1rem; 
+  color: #333;
+}
+
+.chat-date { 
+  font-size: 0.8rem; 
+  color: #888; 
+}
+
+.ad-name { 
+  font-size: 0.85rem; 
+  color: #3b82f6; 
+  font-weight: 500;
+  margin-bottom: 4px; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+
+.last-message { 
+  font-size: 0.9rem; 
+  color: #666; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
 
 .chat-main {
   flex: 1;
@@ -337,11 +348,21 @@ watch(() => route.params, (newParams) => {
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   background: #fff;
 }
+
 .messages-header h3 { margin: 0; font-size: 1.1rem; }
-.back-btn { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+.back-btn { 
+  background: none; 
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.9rem; 
+  cursor: pointer; 
+  color: #555;
+}
 
 .messages-list {
   flex: 1;
@@ -396,8 +417,9 @@ watch(() => route.params, (newParams) => {
   flex: 1;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 25px;
+  border-radius: 8px;
   outline: none;
+  font-size: 1rem;
 }
 .input-field:focus { border-color: #3b82f6; }
 
@@ -405,14 +427,20 @@ watch(() => route.params, (newParams) => {
   background: #3b82f6;
   color: white;
   border: none;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
+  padding: 0 20px;
+  border-radius: 8px; 
   cursor: pointer;
-  font-size: 1.2rem;
-  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
 }
-.send-btn:disabled { background: #ccc; }
+.send-btn:disabled { 
+  background: #ccc; 
+  cursor: not-allowed;
+}
+.send-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
 
 .no-chat-selected {
   flex: 1;
@@ -423,12 +451,34 @@ watch(() => route.params, (newParams) => {
 }
 
 .loading, .empty-list { text-align: center; padding: 20px; color: #888; }
+.clickable-title {
+  margin: 0;
+  font-size: 1.1rem;
+  cursor: pointer;       
+  color: #3b82f6;          
+  transition: all 0.2s;
+  display: flex;          
+  align-items: center;
+  gap: 5px;
+}
+
+.clickable-title:hover {
+  text-decoration: underline; 
+}
 
 @media (max-width: 768px) {
   .chat-sidebar { width: 100%; border-right: none; }
   .chat-main { display: none; }
-  .mobile-hidden { display: none; }
-  .chat-main.mobile-visible { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; }
-  .back-btn { display: block; }
+  .mobile-hidden { display: none !important; }
+  
+  .chat-main.mobile-visible { 
+    display: flex; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 100; 
+  }
 }
 </style>
