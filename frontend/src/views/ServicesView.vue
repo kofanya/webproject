@@ -1,11 +1,11 @@
 <template>
   <div class="container-2">
-    <h1 class="title">Актуальные объявления</h1>
+    <h1 class="title">Актуальные услуги</h1>
 
     <div class="filters">
       <select v-model="selectedCategory" @change="fetchAds" class="form-control">
         <option value="all">Все категории</option>
-        <option v-for="(name, key) in ITEM_CATEGORIES" :key="key" :value="key">
+        <option v-for="(name, key) in SERVICE_CATEGORIES" :key="key" :value="key">
           {{ name }}
         </option>
       </select>
@@ -62,7 +62,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ITEM_CATEGORIES, DISTRICTS } from '@/utils/categories'
+import { SERVICE_CATEGORIES, DISTRICTS } from '@/utils/categories'
 
 const router = useRouter()
 const ads = ref([])
@@ -76,7 +76,7 @@ const fetchAds = async () => {
   try {
     const params = new URLSearchParams()
     
-    params.append('ad_type', 'item')
+    params.append('ad_type', 'service')
     
     if (selectedCategory.value !== 'all') {
       params.append('category', selectedCategory.value)

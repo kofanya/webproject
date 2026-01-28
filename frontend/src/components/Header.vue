@@ -11,10 +11,10 @@
         <nav class="header-nav" :class="{ 'is-open': isMenuOpen }">
           <ul class="nav-list">
             <li @click="closeMenu">
-                <RouterLink to="/ads" class="nav-link">Смотреть объявления</RouterLink>
+                <RouterLink to="/ads" class="nav-link">Смотреть товары</RouterLink>
             </li>
             <li @click="closeMenu">
-                <RouterLink to="/ads" class="nav-link">Услуги</RouterLink>
+                <RouterLink to="/services" class="nav-link">Услуги</RouterLink>
             </li>
             <li @click="closeMenu">
                 <RouterLink to="/ads" class="nav-link">Избранное</RouterLink>

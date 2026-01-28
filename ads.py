@@ -10,10 +10,8 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 api_ads_bp = Blueprint('api_ads', __name__)
 
 def delete_file_from_disk(filename):
-    """Удаляет файл из папки uploads, если он существует"""
     if not filename:
-        return
-        
+        return   
     try:
         file_path = os.path.join(current_app.root_path, 'static', 'uploads', filename)
         
@@ -54,8 +52,21 @@ def serialize_ad(ad, full=False):
 
 @api_ads_bp.route('/ads', methods=['GET'])
 def get_ads():
-    ads = Ad.query.filter_by(status='active').order_by(Ad.created_date.desc()).all()
+    ad_type = request.args.get('ad_type')
+    category = request.args.get('category')
+    district = request.args.get('district')
+
+    query = Ad.query.filter_by(status='active')
+    if ad_type:
+        query = query.filter_by(ad_type=ad_type)
+
+    if category and category != 'all':
+        query = query.filter_by(category=category)
+
+    if district and district != 'all':
+        query = query.filter_by(district=district)
     
+    ads = query.order_by(Ad.created_date.desc()).all()
     ads_list = [serialize_ad(ad, full=False) for ad in ads]
     return jsonify(ads_list)
 
