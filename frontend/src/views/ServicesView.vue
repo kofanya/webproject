@@ -131,7 +131,6 @@ const toggleFavorite = async (ad) => {
   }
 }
 
-
 onMounted(() => {
   fetchAds()
 })

@@ -32,7 +32,7 @@ onMounted(async () => {
 
 .content{
   flex: 1;
-  padding-top: 90px;
+  padding-top: 70px;
 }
 
 </style>
