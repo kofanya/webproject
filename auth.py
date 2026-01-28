@@ -108,7 +108,7 @@ def get_current_user():
     user = User.query.get(current_user_id)
     
     if not user:
-        return jsonify({"success": False, "error": "User not found"}), 404
+        return jsonify({"success": False, "error": "Пользователь не найден"}), 404
 
     return jsonify({
         "success": True,

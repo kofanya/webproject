@@ -12,7 +12,7 @@ from reviews import api_reviews_bp
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'my-secret-key-123456' 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///newsweblab2.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///webproject.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = "secret-jwt-key-1234"
@@ -20,7 +20,7 @@ app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
 
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"] 
-app.config["JWT_COOKIE_CSRF_PROTECT"] = False 
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 
 db.init_app(app)
 jwt = JWTManager(app)
