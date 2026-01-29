@@ -1,10 +1,5 @@
 <template>
-  <div v-if="!isAdmin" class="access-denied-container">
-    <h1>Доступ запрещен</h1>
-    <p>Эта страница доступна только администраторам.</p>
-  </div>
-
-  <div v-else class="admin-container">
+  <div v-if="authStore.user?.is_admin" class="admin-container">
     <h1>Панель администратора</h1>
     
     <div class="tabs">
@@ -124,6 +119,10 @@
         <div v-if="reviews.length === 0">Отзывов пока нет.</div>
       </div>
     </div>
+  </div>
+  <div v-else >
+    <h1>Доступ запрещен</h1>
+    <p>Эта страница доступна только администраторам.</p>
   </div>
 </template>
 

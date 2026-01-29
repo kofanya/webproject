@@ -74,7 +74,9 @@ def login():
 @jwt_required(refresh=True)
 def refresh():
     current_user_id = get_jwt_identity()
-    new_access_token = create_access_token(identity=current_user_id)
+    user = User.query.get(current_user_id)
+    additional_claims = {"is_administrator": user.is_admin} if user else {}
+    new_access_token = create_access_token(identity=current_user_id, additional_claims=additional_claims)
 
     response = jsonify({"success": True})
     response.set_cookie('access_token_cookie', value=new_access_token, httponly=True)
@@ -99,7 +101,7 @@ def logout():
 
     response = jsonify({"success": True, "message": "Выход выполнен"})
     response.set_cookie('access_token_cookie', '', expires=0, httponly=True)
-    response.set_cookie('refresh_token_cookie', '', expires=0, httponly=True)
+    response.set_cookie('refresh_token_cookie', '', expires=0, httponly=True, path='/api/auth/refresh')
     return response, 200
 
 @auth_bp.route('/me', methods=['GET'])
