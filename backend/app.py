@@ -1,18 +1,21 @@
-from flask import Flask, g 
+from flask import Flask, g, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt_identity
 from datetime import timedelta
 from models import db, TokenBlocklist, Ad, AdPhoto, User 
+import os
 
 from auth import auth_bp
 from ads import api_ads_bp
 from messages import api_messages_bp
 from reviews import api_reviews_bp
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static_dist', static_url_path='/')
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'instance', 'webproject.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 
 app.config['SECRET_KEY'] = 'my-secret-key-123456' 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///webproject.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config["JWT_SECRET_KEY"] = "secret-jwt-key-1234"
@@ -43,6 +46,19 @@ def load_user_from_jwt():
     except Exception:
         g.current_user_id = None
 
+@app.route('/')
+def index():
+    return app.send_static_file("index.html")
+
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file("index.html")
+
+@app.route('/static/uploads/<path:filename>')
+def serve_uploads(filename):
+    uploads_folder = os.path.join(app.root_path, 'static', 'uploads')
+    return send_from_directory(uploads_folder, filename)
+
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(api_ads_bp, url_prefix='/api')
 app.register_blueprint(api_messages_bp, url_prefix='/api') 
@@ -51,4 +67,4 @@ app.register_blueprint(api_reviews_bp, url_prefix='/api')
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
