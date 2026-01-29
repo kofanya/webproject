@@ -61,6 +61,7 @@ def login():
             'name': user.name,
             'last_name': user.last_name,
             'email': user.email,
+            "is_admin": user.is_admin
         }
     })
 
@@ -116,5 +117,6 @@ def get_current_user():
             "id": user.id,
             "name": user.name,
             "email": user.email,
+            "is_admin": user.is_admin
         }
     }), 200

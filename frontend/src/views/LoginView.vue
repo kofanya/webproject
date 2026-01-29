@@ -31,7 +31,9 @@ const form = ref({ email: '', password: '' })
 const login = async (e) => {
   e.preventDefault()
   await authStore.login(form.value)
-  router.push('/')
+  if (authStore.isAuthenticated) {
+    router.push('/')
+}
 }
 </script>
 

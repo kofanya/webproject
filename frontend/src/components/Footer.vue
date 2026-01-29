@@ -41,12 +41,6 @@ import { RouterLink } from 'vue-router'
   padding: 0 24px;
 }
 
-.footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
 .brand-link {
   display: flex;
   align-items: center;
@@ -66,14 +60,7 @@ import { RouterLink } from 'vue-router'
   letter-spacing: -0.5px;
 }
 
-.copyright {
-  color: #94a3b8; 
-  font-size: 14px;
-  font-weight: 400;
-  border-left: 1px solid #e2e8f0;
-  padding-left: 20px;
-  margin-left: 0px;
-}
+
 .footer-social {
   list-style: none;
   display: flex;

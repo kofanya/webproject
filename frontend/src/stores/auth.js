@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
-    user: { name: '', id: null },
+    user: { name: '', id: null, is_admin: false },
     isCheckingAuth: true 
   }),
   actions: {
@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
         if (res.ok) {
           const data = await res.json()
           this.isAuthenticated = true
-          this.user = { name: data.user.name, id: data.user.id }
+          this.user = { name: data.user.name, id: data.user.id, is_admin: data.user.is_admin }
         } else {
           const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' })
           if (refreshRes.ok) {
@@ -44,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {})
       this.isAuthenticated = false
-      this.user = { name: '', id: null }
+      this.user = { name: '', id: null, is_admin: false }
       this.isCheckingAuth = false
     }
   }

@@ -60,7 +60,7 @@ def get_user_reviews(user_id):
             'text': r.text,
             'date': r.created_date.isoformat(),
             'author_name': r.author.name,
-            'ad_title': r.ad_id
+            'ad_id': r.ad_id
         })
 
     return jsonify({

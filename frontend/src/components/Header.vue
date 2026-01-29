@@ -11,13 +11,13 @@
         <nav class="header-nav" :class="{ 'is-open': isMenuOpen }">
           <ul class="nav-list">
             <li @click="closeMenu">
-                <RouterLink to="/ads" class="nav-link">Смотреть товары</RouterLink>
+              <RouterLink to="/ads" class="nav-link">Смотреть товары</RouterLink>
             </li>
             <li @click="closeMenu">
-                <RouterLink to="/services" class="nav-link">Услуги</RouterLink>
+              <RouterLink to="/services" class="nav-link">Услуги</RouterLink>
             </li>
             <li @click="closeMenu">
-                <RouterLink to="/favorites" class="nav-link">Избранное</RouterLink>
+              <RouterLink to="/favorites" class="nav-link">Избранное</RouterLink>
             </li>
             <template v-if="authStore.isAuthenticated">
               <li @click="closeMenu">
@@ -25,6 +25,9 @@
               </li>
               <li @click="closeMenu">
                 <RouterLink to="/chats" class="nav-link">Сообщения</RouterLink>
+              </li>
+              <li v-if="authStore.user?.is_admin" @click="closeMenu">
+                <RouterLink to="/admin" class="nav-link">Админ</RouterLink>
               </li>
               <li class="user-greeting">
                 Привет, {{ authStore.user?.name }}!
@@ -84,16 +87,8 @@ const logout = async () => {
 </script>
 
 <style scoped>
-:root {
-  --primary-blue: #3b82f6;   
-  --primary-purple: #8b5cf6;    
-  --dark-text: #1e293b;         
-  --light-bg: rgba(255, 255, 255, 0.85); 
-  --gradient-main: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
-}
-
 .header {
-  background-color: var(--light-bg);
+  background-color: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
@@ -124,7 +119,6 @@ const logout = async () => {
   font-size: 30px;
   font-weight: 900;
   margin: 0;
-
   background: linear-gradient(135deg, #2563eb, #7c3aed);
   background-clip: text;
   -webkit-background-clip: text;
@@ -180,6 +174,7 @@ const logout = async () => {
 .login-button:active {
   transform: translateY(0);
 }
+
 .burger-btn {
   display: none;
   flex-direction: column;

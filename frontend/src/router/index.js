@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -10,6 +11,7 @@ import ChatView from '../views/ChatView.vue'
 import ServicesView from '../views/ServicesView.vue'
 import FavoritesView from '../views/FavoritesView.vue'
 import UserView from '../views/UserView.vue'
+import AdminView from '../views/AdminView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,7 +32,21 @@ const router = createRouter({
     { path: '/services', component: ServicesView },
     { path: '/favorites', component: FavoritesView },
     { path: '/users/:id', component: UserView },
+    { path: '/admin', component: AdminView },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  if (to.meta.requiresAdmin) {
+    if (authStore.isAuthenticated && authStore.user?.is_admin) {
+      next() 
+    } else {
+      next('/') 
+    }
+  } else {
+    next()
+  }
 })
 
 export default router

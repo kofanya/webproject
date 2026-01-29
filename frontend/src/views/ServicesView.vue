@@ -85,9 +85,9 @@ const fetchAds = async () => {
     }
 
     const response = await fetch(`/api/ads?${params.toString()}`) 
-    if (!response.ok) throw new Error('Ошибка')
-    
-    ads.value = await response.json()
+    if (response.ok) {
+      ads.value = await response.json()
+    }
   } catch (e) {
     console.error(e)
   } finally {

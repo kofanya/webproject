@@ -32,6 +32,7 @@ class User(UserMixin, db.Model):
     reviews_written = db.relationship('Review', foreign_keys='Review.author_id', backref='author', lazy='dynamic')
     reviews_received = db.relationship('Review', foreign_keys='Review.target_user_id', backref='target_user', lazy='dynamic', cascade='all, delete-orphan')
     saved_ads = db.relationship('Ad', secondary=favorites, backref=db.backref('favorited_by', lazy='dynamic'), lazy='dynamic')
+    is_admin = db.Column(db.Boolean, default=False)
 
     @property
     def average_rating(self):
@@ -104,9 +105,7 @@ class Review(db.Model):
     text = db.Column(db.Text, nullable=True)        
     created_date = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
     target_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
     ad_id = db.Column(db.Integer, db.ForeignKey('ad.id'), nullable=True)
 
     def __repr__(self):

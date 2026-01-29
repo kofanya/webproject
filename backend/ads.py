@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import uuid
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 api_ads_bp = Blueprint('api_ads', __name__)
 

@@ -18,7 +18,7 @@
       </select>
     </div>
 
-    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-if="isLoading" class="loading"></div>
     <div v-else-if="ads.length === 0" class="empty">Нет активных объявлений</div>
 
     <div v-else class="blog-cards">
@@ -54,24 +54,24 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ITEM_CATEGORIES, DISTRICTS } from '@/utils/categories'
 import { useAuthStore } from '@/stores/auth'
+import { ITEM_CATEGORIES, DISTRICTS } from '@/utils/categories'
 
-const router = useRouter()
-const ads = ref([])
-const loading = ref(true)
 const BACKEND_URL = 'http://127.0.0.1:5000'
-const selectedCategory = ref('all')
-const selectedDistrict = ref('all')
+const router = useRouter()
 const authStore = useAuthStore()
 
+const ads = ref([])
+const selectedCategory = ref('all')
+const selectedDistrict = ref('all')
+const isLoading = ref(true)
+
 const fetchAds = async () => {
-  loading.value = true
+  isLoading.value = true
   try {
     const params = new URLSearchParams()
-    
     params.append('ad_type', 'item')
-    
+
     if (selectedCategory.value !== 'all') {
       params.append('category', selectedCategory.value)
     }
@@ -79,31 +79,16 @@ const fetchAds = async () => {
       params.append('district', selectedDistrict.value)
     }
 
-    const response = await fetch(`/api/ads?${params.toString()}`) 
-    if (!response.ok) throw new Error('Ошибка')
-    
-    ads.value = await response.json()
+    const response = await fetch(`/api/ads?${params.toString()}`)
+    if (response.ok) {
+      ads.value = await response.json()
+    }
   } catch (e) {
-    console.error(e)
+    console.error('Ошибка загрузки:', e)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
-
-const getPhotoUrl = (filename) => {
-  if (!filename) return '/placeholder-image.png'
-  return `${BACKEND_URL}/static/uploads/${filename}`
-}
-
-const formatPrice = (price) => {
-  if (price === null || price === undefined) return '0'
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
-}
-
-const goToAd = (id) => {
-  router.push(`/ads/${id}`)
-}
-
 const toggleFavorite = async (ad) => {
   if (!authStore.isAuthenticated) {
     router.push('/login')
@@ -112,11 +97,8 @@ const toggleFavorite = async (ad) => {
   try {
     const response = await fetch(`/api/ads/${ad.id}/favorite`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
+      headers: { 'Authorization': `Bearer ${authStore.token}` }
     })
-    
     if (response.ok) {
       const data = await response.json()
       ad.is_favorite = data.is_favorite
@@ -124,6 +106,16 @@ const toggleFavorite = async (ad) => {
   } catch (e) {
     console.error(e)
   }
+}
+
+const getPhotoUrl = (filename) => {
+  return filename ? `${BACKEND_URL}/static/uploads/${filename}` : '/placeholder-image.png'
+}
+const formatPrice = (price) => {
+  return price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") : '0'
+}
+const goToAd = (id) => {
+  router.push(`/ads/${id}`)
 }
 
 onMounted(() => {

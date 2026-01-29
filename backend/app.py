@@ -9,6 +9,7 @@ from auth import auth_bp
 from ads import api_ads_bp
 from messages import api_messages_bp
 from reviews import api_reviews_bp
+from admin import admin_bp
 
 app = Flask(__name__, static_folder='static_dist', static_url_path='/')
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -46,6 +47,13 @@ def load_user_from_jwt():
     except Exception:
         g.current_user_id = None
 
+@jwt.additional_claims_loader
+def add_claims_to_access_token(identity):
+    user = User.query.get(int(identity))
+    if user and user.is_admin:
+        return {'is_administrator': True}
+    return {'is_administrator': False}
+
 @app.route('/')
 def index():
     return app.send_static_file("index.html")
@@ -63,6 +71,7 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(api_ads_bp, url_prefix='/api')
 app.register_blueprint(api_messages_bp, url_prefix='/api') 
 app.register_blueprint(api_reviews_bp, url_prefix='/api')
+app.register_blueprint(admin_bp, url_prefix='/api')
 
 if __name__ == '__main__':
     with app.app_context():
