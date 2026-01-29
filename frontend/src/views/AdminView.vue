@@ -1,5 +1,10 @@
 <template>
-  <div class="admin-container">
+  <div v-if="!isAdmin" class="access-denied-container">
+    <h1>Доступ запрещен</h1>
+    <p>Эта страница доступна только администраторам.</p>
+  </div>
+
+  <div v-else class="admin-container">
     <h1>Панель администратора</h1>
     
     <div class="tabs">
@@ -13,7 +18,8 @@
         Отзывы
       </button>
     </div>
-    <div v-if="error">{{ error }}</div>
+
+    <div v-if="error" class="error">{{ error }}</div>
     <div v-else>
       <div v-if="currentTab === 'users'">
         <h2>Список пользователей</h2>
@@ -103,9 +109,10 @@
               <td>{{ review.rating }}</td>
               <td>{{ review.text }}</td>
               <td>
-                <RouterLink :to="`/ads/${review.ad_id}`" target="_blank" class="link-view">
+                <RouterLink v-if="review.ad_id" :to="`/ads/${review.ad_id}`" target="_blank" class="link-view">
                   Посмотреть
                 </RouterLink>
+                <span v-else style="color:gray">Товар удален</span>
               </td>
               <td>{{ review.author }}</td>
               <td>
@@ -122,7 +129,9 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 
+const authStore = useAuthStore();
 const currentTab = ref('users');
 const users = ref([]);
 const ads = ref([]);
