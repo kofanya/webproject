@@ -6,7 +6,7 @@ api_reviews_bp = Blueprint('api_reviews', __name__)
 
 @api_reviews_bp.route('/reviews', methods=['POST'])
 def create_review():
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
         return jsonify({'error': 'Нужна авторизация'}), 401
 

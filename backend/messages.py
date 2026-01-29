@@ -6,7 +6,7 @@ api_messages_bp = Blueprint('api_messages', __name__)
 
 @api_messages_bp.route('/messages', methods=['POST'])
 def send_message():
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
         return jsonify({'error': 'Необходима авторизация'}), 401
     
@@ -58,7 +58,7 @@ def send_message():
 
 @api_messages_bp.route('/chats', methods=['GET'])
 def get_my_chats():
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
         return jsonify({'error': 'Необходима авторизация'}), 401
 
@@ -92,7 +92,7 @@ def get_my_chats():
 
 @api_messages_bp.route('/chats/<int:ad_id>/<int:partner_id>', methods=['GET'])
 def get_conversation(ad_id, partner_id):
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
         return jsonify({'error': 'Необходима авторизация'}), 401
     messages = Message.query.filter(
@@ -120,7 +120,7 @@ def get_conversation(ad_id, partner_id):
 
 @api_messages_bp.route('/messages/<int:message_id>', methods=['DELETE'])
 def delete_message(message_id):
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
         return jsonify({'error': 'Необходима авторизация'}), 401
 

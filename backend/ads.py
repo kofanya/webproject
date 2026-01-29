@@ -28,7 +28,7 @@ def get_ads():
     district = request.args.get('district')
     
     current_user = None
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if user_id:
         current_user = User.query.get(int(user_id))
 
@@ -68,7 +68,7 @@ def get_ads():
 @api_ads_bp.route('/ads/<int:id>', methods=['GET'])
 def get_ad(id):
     current_user = None
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if user_id:
         current_user = User.query.get(int(user_id))
 
@@ -117,7 +117,7 @@ def create_ad():
     if not data.get('title') or not data.get('description') or not data.get('district'):
         return jsonify({'error': 'Заполните обязательные поля'}), 400
 
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
          return jsonify({'error': 'Нужна авторизация'}), 401
 
@@ -161,7 +161,7 @@ def create_ad():
 
 @api_ads_bp.route('/ads/<int:id>', methods=['PUT'])
 def edit_ad(id):
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
          return jsonify({'error': 'Нужна авторизация'}), 401
     
@@ -205,7 +205,7 @@ def edit_ad(id):
 
 @api_ads_bp.route('/ads/<int:id>', methods=['DELETE'])
 def delete_ad(id):
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id:
          return jsonify({'error': 'Нужна авторизация'}), 401
     
@@ -245,7 +245,7 @@ def upload_image():
 
 @api_ads_bp.route('/ads/<int:id>/favorite', methods=['POST'])
 def toggle_favorite(id):
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id: return jsonify({'error': 'Нужна авторизация'}), 401
 
     user = User.query.get(int(user_id))
@@ -266,7 +266,7 @@ def toggle_favorite(id):
 
 @api_ads_bp.route('/favorites', methods=['GET'])
 def get_favorites():
-    user_id = getattr(g, 'current_user_id', None)
+    user_id = g.current_user_id
     if not user_id: return jsonify({'error': 'Нужна авторизация'}), 401
 
     user = User.query.get(int(user_id))
