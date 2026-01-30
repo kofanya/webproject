@@ -5,6 +5,9 @@ import os
 import uuid
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+MAX_TITLE_LEN = 200
+MAX_ADDRESS_LEN = 100
+MAX_DESC_LEN = 3000
 
 api_ads_bp = Blueprint('api_ads', __name__)
 
@@ -114,8 +117,28 @@ def create_ad():
 
     data = request.get_json()
 
-    if not data.get('title') or not data.get('description') or not data.get('district'):
-        return jsonify({'error': 'Заполните обязательные поля'}), 400
+    title = data.get('title', '').strip()
+    description = data.get('description', '').strip()
+    district = data.get('district', '').strip()
+    address = data.get('address', '').strip()
+
+    if not title:
+        return jsonify({'error': 'Заполните заголовок'}), 400
+    if len(title) > MAX_TITLE_LEN:
+        return jsonify({'error': f'Заголовок слишком длинный (макс. {MAX_TITLE_LEN})'}), 400
+
+    if not description:
+        return jsonify({'error': 'Заполните описание'}), 400
+    if len(description) > MAX_DESC_LEN:
+        return jsonify({'error': f'Описание слишком длинное (макс. {MAX_DESC_LEN})'}), 400
+
+    if not district:
+        return jsonify({'error': 'Выберите район'}), 400
+
+    if not address:
+        return jsonify({'error': 'Укажите адрес'}), 400
+    if len(address) > MAX_ADDRESS_LEN:
+        return jsonify({'error': f'Адрес слишком длинный (макс. {MAX_ADDRESS_LEN})'}), 400
 
     user_id = g.current_user_id
     if not user_id:
@@ -130,14 +153,14 @@ def create_ad():
         
     try:
         new_ad = Ad(
-            title=data['title'].strip(),
-            description=data['description'].strip(), 
+            title=title,  
+            description=description, 
             price=price,
             price_unit=data.get('price_unit', 'rub'),
             ad_type=data.get('ad_type', 'item'),
             condition=data.get('condition'),
-            district=data['district'].strip(),
-            address=data.get('address'),
+            district=district,
+            address=address,
             category=data.get('category'),
             user_id=user_id,
             status='active'
@@ -173,15 +196,49 @@ def edit_ad(id):
     data = request.get_json()
 
     try:
-        if 'title' in data: ad.title = data['title']
-        if 'description' in data: ad.description = data['description']
-        if 'price' in data: ad.price = data['price']
+        if 'title' in data: 
+            title = data['title'].strip()
+            if not title: 
+                return jsonify({'error': 'Название обязательно'}), 400
+            if len(title) > MAX_TITLE_LEN:
+                return jsonify({'error': f'Заголовок слишком длинный (макс. {MAX_TITLE_LEN})'}), 400
+            ad.title = title
+
+        if 'description' in data: 
+            desc = data['description'].strip()
+            if not desc:
+                return jsonify({'error': 'Описание обязательно'}), 400
+            if len(desc) > MAX_DESC_LEN:
+                return jsonify({'error': f'Описание слишком длинное (макс. {MAX_DESC_LEN})'}), 400
+            ad.description = desc
+
+        if 'address' in data:
+            addr = data['address'].strip()
+            if not addr:
+                return jsonify({'error': 'Адрес обязателен'}), 400
+            if len(addr) > MAX_ADDRESS_LEN:
+                return jsonify({'error': f'Адрес слишком длинный (макс. {MAX_ADDRESS_LEN})'}), 400
+            ad.address = addr
+
+        if 'price' in data: 
+            try:
+                price_val = float(data['price'])
+                if price_val < 0:
+                    return jsonify({'error': 'Цена не может быть отрицательной'}), 400
+                ad.price = price_val
+            except ValueError:
+                return jsonify({'error': 'Цена должна быть числом'}), 400
+
         if 'price_unit' in data: ad.price_unit = data['price_unit']
         if 'condition' in data: ad.condition = data['condition']
-        if 'district' in data: ad.district = data['district']
-        if 'address' in data: ad.address = data['address']
+        if 'district' in data: 
+            district = data['district'].strip()
+            if not district: return jsonify({'error': 'Район обязателен'}), 400
+            ad.district = district
+            
         if 'category' in data: ad.category = data['category']
         if 'status' in data: ad.status = data['status']
+
         if 'photos' in data and isinstance(data['photos'], list):
             new_filenames = set(data['photos'])
             current_photos = AdPhoto.query.filter_by(ad_id=ad.id).all()

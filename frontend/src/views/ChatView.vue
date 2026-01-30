@@ -2,12 +2,12 @@
   <div class="chat-container">
     <div class="chat-sidebar" :class="{ 'hidden-on-mobile': isMobileChatActive }">
       <h2 class="sidebar-title">Сообщения</h2>
-      
+
       <div v-if="!chats.length" class="status-msg">У вас пока нет диалогов</div>
 
       <div class="chat-list">
-        <div 
-          v-for="chat in chats" 
+        <div
+          v-for="chat in chats"
           :key="`${chat.ad_id}-${chat.partner_id}`"
           class="chat-item"
           :class="{ active: isChatActive(chat) }"
@@ -30,9 +30,9 @@
         </div>
 
         <div class="messages-list" ref="messagesContainer">
-          <div 
-            v-for="msg in messages" 
-            :key="msg.id" 
+          <div
+            v-for="msg in messages"
+            :key="msg.id"
             class="message-bubble"
             :class="msg.is_mine ? 'mine' : 'theirs'"
           >
@@ -45,11 +45,11 @@
         </div>
 
         <div class="message-input-area">
-          <input 
-            v-model="newMessage" 
+          <input
+            v-model="newMessage"
             @keyup.enter="sendMessage"
-            type="text" 
-            placeholder="Сообщение" 
+            type="text"
+            placeholder="Сообщение"
             class="input-field"
           >
           <button @click="sendMessage" class="send-btn" :disabled="!newMessage.trim()">Отправить</button>
@@ -100,7 +100,7 @@ const fetchChats = async () => {
   try {
     const res = await fetch('/api/chats', { headers: { 'Authorization': `Bearer ${authStore.token}` }})
     if (res.ok) chats.value = await res.json()
-  } catch (e) { console.error(e) } 
+  } catch (e) { console.error(e) }
 }
 
 const fetchMessages = async () => {
@@ -119,7 +119,7 @@ const fetchMessages = async () => {
         messages.value = data
       }
     }
-  } catch (e) { console.error(e) } 
+  } catch (e) { console.error(e) }
 }
 
 const sendMessage = async () => {
@@ -135,7 +135,7 @@ const sendMessage = async () => {
     })
     if (res.ok) {
       await fetchMessages()
-      await fetchChats()    
+      await fetchChats()
     }
   } catch (e) { alert('Ошибка сети') }
 }
@@ -155,11 +155,29 @@ const scrollToBottom = async () => {
 
 const formatTime = (isoString) => {
   if (!isoString) return ''
-  const date = new Date(isoString.endsWith('Z') ? isoString : isoString + 'Z')
+
+  let dateStr = isoString
+  if (!isoString.endsWith('Z') && !isoString.includes('+')) {
+    dateStr += 'Z'
+  }
+  const date = new Date(dateStr)
   const now = new Date()
-  const isToday = date.setHours(0,0,0,0) === now.setHours(0,0,0,0)
-  
-  return date.toLocaleString('ru-RU', isToday ? { hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit' })
+  const isToday = date.getDate() === now.getDate() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getFullYear() === now.getFullYear()
+
+  if (isToday) {
+    return date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  })
 }
 
 onMounted(() => {
@@ -332,9 +350,9 @@ watch(() => route.params, (newParams) => {
 @media (max-width: 768px) {
   .chat-sidebar { width: 100%; border-right: none; }
   .chat-main { display: none; }
-  
+
   .hidden-on-mobile { display: none !important; }
-  
+
   .visible-on-mobile {
     display: flex;
     position: fixed; top: 0; left: 0;

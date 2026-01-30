@@ -62,6 +62,118 @@
   </div>
 </template>
 
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { ITEM_CATEGORIES, SERVICE_CATEGORIES, DISTRICTS } from '@/utils/categories'
+
+const authStore = useAuthStore()
+const router = useRouter()
+const isLoading = ref(false)
+const isUploading = ref(false)
+const errorMessage = ref('')
+
+const form = ref({
+  title: '',
+  description: '',
+  price: null,
+  district: '',
+  address: '',
+  category: '',
+  ad_type: 'item'
+})
+
+const uploadedPhotos = ref([])
+
+const currentCategories = computed(() => {
+  if (form.value.ad_type === 'item') {
+    return ITEM_CATEGORIES
+  } else {
+    return SERVICE_CATEGORIES
+  }
+})
+
+watch(() => form.value.ad_type, () => {
+  form.value.category = ''
+})
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return 
+
+  isUploading.value = true 
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: formData
+    })
+    
+    const data = await response.json() 
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Ошибка загрузки фото')
+    }
+    uploadedPhotos.value.push(data.filename)
+    
+  } catch (error) {
+    alert('Не удалось загрузить фото: ' + error.message)
+  } finally {
+    isUploading.value = false 
+    event.target.value = ''
+  }
+}
+
+const removePhoto = (index) => {
+  uploadedPhotos.value.splice(index, 1)
+}
+
+const createAd = async () => {
+  errorMessage.value = ''
+  if (form.value.price < 0) {
+    alert('Цена не может быть отрицательной')
+    return
+  }
+  isLoading.value = true
+
+  try {
+    const payload = {
+      ...form.value,     
+      photos: uploadedPhotos.value 
+    }
+    const response = await fetch('/api/ads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',   
+        'Authorization': `Bearer ${authStore.token}`
+      },
+      body: JSON.stringify(payload)
+    })
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Произошла ошибка при создании')
+    }
+
+    alert('Объявление успешно создано!')
+    router.push(`/ads/${data.id}`)
+
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = error.message
+    alert(errorMessage.value)
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
+
 <style scoped>
 
 form {
@@ -194,94 +306,3 @@ form {
 }
 </style>
 
-<script setup>
-import { ITEM_CATEGORIES, SERVICE_CATEGORIES, DISTRICTS } from '@/utils/categories'
-import { ref, onMounted, watch, computed} from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-const authStore = useAuthStore()
-const router = useRouter()
-
-const isLoading = ref(false) 
-const isUploading = ref(false)  
-const errorMessage = ref('')
-
-const form = ref({
-  title: '',
-  description: '',
-  price: null,
-  district: '',
-  address: '',
-  category: '',
-  ad_type: 'item'
-})
-
-const uploadedPhotos = ref([])
-
-const currentCategories = computed(() => {
-  return form.value.ad_type === 'item' ? ITEM_CATEGORIES : SERVICE_CATEGORIES
-})
-
-watch(() => form.value.ad_type, () => { form.value.category = '' })
-
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  isUploading.value = true
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      },
-      body: formData
-    })
-    
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.error || 'Ошибка загрузки фото')
-
-    uploadedPhotos.value.push(data.filename)
-    
-  } catch (e) {
-    alert('Не удалось загрузить фото: ' + e.message)
-  } finally {
-    isUploading.value = false
-    event.target.value = ''
-  }
-}
-
-const removePhoto = (index) => {
-  uploadedPhotos.value.splice(index, 1)
-}
-
-const createAd = async () => {
-  isLoading.value = true
-  errorMessage.value = ''
-
-  try {
-    const response = await fetch('/api/ads', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.token}` 
-      },
-      body: JSON.stringify({
-        ...form.value,
-        photos: uploadedPhotos.value
-      })
-    })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.error)
-    alert('Объявление создано!')
-    router.push(`/ads/${data.id}`)
-  } catch (e) {
-    errorMessage.value = e.message
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>

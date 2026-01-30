@@ -326,14 +326,16 @@ onMounted(() => {
 }
 .info-column { 
   display: flex; 
-  flex-direction: column; 
+  flex-direction: column;
+  overflow-wrap: break-word;
 }
 
 .ad-title { 
   font-size: 2rem; 
   margin: 0 0 10px 0; 
   color: #333; 
-  line-height: 1.2; 
+  line-height: 1.2;
+  overflow-wrap: break-word; 
 }
 
 .ad-price { 
@@ -348,18 +350,21 @@ onMounted(() => {
 .meta-row { 
   display: flex; 
   margin-bottom: 12px; 
-  font-size: 1.05rem; 
+  font-size: 1.05rem;
+  align-items: flex-start;
 }
 
 .label { 
   color: #888; 
   width: 120px; 
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 
 .value { 
   color: #333; 
-  font-weight: 500; 
+  font-weight: 500;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .actions-panel { margin-top: auto; }
@@ -383,14 +388,16 @@ onMounted(() => {
 .description-section { 
   margin-top: 20px; 
   padding-top: 20px; 
-  border-top: 1px solid #eee; 
+  border-top: 1px solid #eee;
+  overflow-wrap: break-word;
 }
 
 .section-title { 
   font-size: 1.5rem; 
   font-weight: 600; 
   margin-bottom: 15px; 
-  color: #333; 
+  color: #333;
+  overflow-wrap: break-word;
 }
 
 .vacancy-text { 
