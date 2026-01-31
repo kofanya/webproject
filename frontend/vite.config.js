@@ -34,7 +34,11 @@ export default defineConfig({
         secure: false,
         cookieDomainRewrite: 'localhost'
       }
-    }
+    },
+    '/static': {
+        target: 'http://backend:5000',
+        changeOrigin: true,
+      }
   }
 
 })

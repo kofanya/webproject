@@ -67,6 +67,8 @@ def serve_uploads(filename):
     uploads_folder = os.path.join(app.root_path, 'static', 'uploads')
     return send_from_directory(uploads_folder, filename)
 
+
+
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(api_ads_bp, url_prefix='/api')
 app.register_blueprint(api_messages_bp, url_prefix='/api') 
